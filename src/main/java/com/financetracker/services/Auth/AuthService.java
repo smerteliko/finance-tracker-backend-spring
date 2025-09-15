@@ -29,7 +29,7 @@ public class AuthService {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
 
-        return jwtService.generateToken((UserDetails) user);
+        return jwtService.generateToken(user);
     }
 
     public String login(LoginRequest request) {
@@ -43,6 +43,6 @@ public class AuthService {
         User user = userRepository.findByEmail(request.getEmail())
             .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        return jwtService.generateToken((UserDetails) user);
+        return jwtService.generateToken(user);
     }
 }
