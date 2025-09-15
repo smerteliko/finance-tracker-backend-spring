@@ -8,10 +8,12 @@ import lombok.EqualsAndHashCode;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+@Entity
 @Table(name = "users", indexes = {
     @Index(name = "idx_user_email", columnList = "email", unique = true),
     @Index(name = "idx_user_uuid", columnList = "uuid", unique = true),
@@ -38,5 +40,5 @@ public class User extends BaseEntity {
     private String lastName;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Transaction> transactions;
+    private List<Transaction> transactions = new ArrayList<>();
 }

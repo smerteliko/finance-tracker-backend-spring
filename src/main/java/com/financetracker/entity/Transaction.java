@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
     @Index(name = "idx_transaction_date", columnList = "date"),
     @Index(name = "idx_transaction_type", columnList = "type"),
     @Index(name = "idx_transaction_uuid", columnList = "uuid", unique = true),
-    @Index(name = "idx_transaction_created", columnList = "createdAt")
+    @Index(name = "idx_transaction_created", columnList = "created_at")
 })
 @Data
 @EqualsAndHashCode(callSuper = true)
