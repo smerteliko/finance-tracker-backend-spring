@@ -10,8 +10,6 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    networks:
-      - finance-network
 
   backend:
     build: .
@@ -24,8 +22,6 @@ services:
       SPRING_JPA_HIBERNATE_DDL-AUTO: update
     depends_on:
       - postgres
-    networks:
-      - finance-network
     volumes:
       - .:/app
       - maven-data:/root/.m2
@@ -33,7 +29,3 @@ services:
 volumes:
   postgres_data:
   maven-data:
-
-networks:
-  finance-network:
-    driver: bridge
