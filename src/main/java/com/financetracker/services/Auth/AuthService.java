@@ -4,6 +4,7 @@ import com.financetracker.services.JWT.JwtService;
 import com.financetracker.dto.LoginRequest;
 import com.financetracker.entity.User;
 import com.financetracker.repository.UserRepository;
+import com.financetracker.services.UserServices.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -20,16 +21,21 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final CustomUserDetailsService userDetailsService;
 
-    public String register(User user) {
+    public User registerUser(User user) {
         if (userRepository.existsByEmail(user.getEmail())) {
             throw new RuntimeException("User already exists");
         }
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        userRepository.save(user);
+        return userRepository.save(user);
+    }
 
-        return jwtService.generateToken(user);
+    public String register(User user) {
+        User savedUser = registerUser(user);
+        var userDetails = userDetailsService.loadUserByUsername(savedUser.getEmail());
+        return jwtService.generateToken(userDetails);
     }
 
     public String login(LoginRequest request) {
@@ -40,9 +46,7 @@ public class AuthService {
             )
         );
 
-        User user = userRepository.findByEmail(request.getEmail())
-            .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-
-        return jwtService.generateToken(user);
+        var userDetails = userDetailsService.loadUserByUsername(request.getEmail());
+        return jwtService.generateToken(userDetails);
     }
 }
