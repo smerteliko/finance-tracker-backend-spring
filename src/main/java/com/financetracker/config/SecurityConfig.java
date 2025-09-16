@@ -30,7 +30,9 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**", "/api/health", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                .requestMatchers(
+                    SWAGGER_WHITELIST
+                ).permitAll()
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session
@@ -59,4 +61,24 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
+    private static final String[] SWAGGER_WHITELIST = {
+        "/",
+        "/docs",
+        "/api/health/public",
+        "/swagger-ui.html",
+        "/swagger-ui/**",
+        "/v3/api-docs/**",
+        "/api-docs/**",
+        "/swagger-resources/**",
+        "/swagger-resources",
+        "/webjars/**",
+        "/configuration/**",
+        "/configuration/ui",
+        "/configuration/security",
+        "/favicon.ico",
+        "/error",
+        "/actuator/health"
+    };
+
 }
