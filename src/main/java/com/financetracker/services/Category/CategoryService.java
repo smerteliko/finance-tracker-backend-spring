@@ -1,6 +1,7 @@
 package com.financetracker.services.Category;
 
 import com.financetracker.entity.Category;
+import com.financetracker.exception.ResourceNotFoundException;
 import com.financetracker.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,7 +20,7 @@ public class CategoryService {
 
     public Category getCategoryById(Long id) {
         return categoryRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Category not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
     }
 
     public List<Category> getCategoriesByType(Category.CategoryType type) {

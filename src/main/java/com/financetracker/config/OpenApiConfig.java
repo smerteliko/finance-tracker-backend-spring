@@ -39,26 +39,12 @@ public class OpenApiConfig {
             .url("https://your-production-domain.com")
             .description("Production server");
 
-        Contact contact = new Contact()
-            .name("Finance Tracker API Support")
-            .email("support@financetracker.com")
-            .url("https://financetracker.com/contact");
-
-        License mitLicense = new License()
-            .name("MIT License")
-            .url("https://choosealicense.com/licenses/mit/");
-
         Info info = new Info()
             .title("Finance Tracker API")
             .version("1.0.0")
-            .description("A comprehensive REST API for personal finance management. Track income, expenses, and analyze your financial habits.")
-            .contact(contact)
-            .license(mitLicense)
-            .termsOfService("https://financetracker.com/terms");
-        SecurityRequirement securityRequirement = new SecurityRequirement()
-            .addList("bearerAuth");
+            .description("A comprehensive REST API for personal finance management. Track income, expenses, and analyze your financial habits.");
         return new OpenAPI()
             .info(info)
-            .servers(List.of(localServer, productionServer))/*.addSecurityItem(securityRequirement)*/;
+            .servers(List.of(localServer, productionServer));
     }
 }

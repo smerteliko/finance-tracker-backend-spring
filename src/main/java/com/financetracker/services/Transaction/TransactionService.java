@@ -72,7 +72,7 @@ public class TransactionService {
 
     public void deleteTransaction(Long id) {
         if (!transactionRepository.existsById(id)) {
-            throw new RuntimeException("Transaction not found");
+            throw new ResourceNotFoundException("Transaction not found");
         }
         transactionRepository.deleteById(id);
     }

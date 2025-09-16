@@ -4,6 +4,7 @@ import com.financetracker.dto.error.ErrorResponse;
 import com.financetracker.dto.error.ValidationErrorResponse;
 import com.financetracker.dto.login.LoginRequest;
 import com.financetracker.entity.User;
+import com.financetracker.exception.UserAlreadyExistsException;
 import com.financetracker.services.Auth.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -52,7 +53,7 @@ public class AuthController {
         @ApiResponse(responseCode = "400", description = "Invalid input data",
             content = @Content(schema = @Schema(implementation = ValidationErrorResponse.class))),
         @ApiResponse(responseCode = "409", description = "User with this email already exists",
-            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+            content = @Content(schema = @Schema(implementation = UserAlreadyExistsException.class)))
     })
     public ResponseEntity<String> register(@Valid @RequestBody User user) {
         String token = authService.register(user);

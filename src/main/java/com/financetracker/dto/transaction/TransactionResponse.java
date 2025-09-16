@@ -2,12 +2,16 @@ package com.financetracker.dto.transaction;
 
 import com.financetracker.entity.Transaction;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 @Schema(description = "Transaction response with complete details")
 public class TransactionResponse {
 

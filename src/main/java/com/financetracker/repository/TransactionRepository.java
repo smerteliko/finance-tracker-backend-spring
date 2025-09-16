@@ -15,12 +15,10 @@ import java.util.Optional;
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
     Optional<Transaction> findByUuid(String uuid);
 
-    // Используем JPQL с правильными именами полей Entity
     List<Transaction> findByUserOrderByDateDesc(User user);
 
     List<Transaction> findByUserAndDateBetweenOrderByDateDesc(User user, LocalDateTime start, LocalDateTime end);
 
-    // Правильный JPQL запрос с именем поля Entity (user), а не колонки БД (user_id)
     @Query("SELECT t FROM Transaction t WHERE t.user.id = :userId ORDER BY t.date DESC")
     List<Transaction> findByUserIdOrderByDateDesc(@Param("userId") Long userId);
 
