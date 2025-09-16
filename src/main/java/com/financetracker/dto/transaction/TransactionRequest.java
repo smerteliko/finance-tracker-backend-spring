@@ -1,4 +1,4 @@
-package com.financetracker.dto;
+package com.financetracker.dto.transaction;
 
 import com.financetracker.entity.Transaction;
 import io.swagger.v3.oas.annotations.media.Schema;

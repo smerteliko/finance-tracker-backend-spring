@@ -1,7 +1,8 @@
 package com.financetracker.services.Auth;
 
+import com.financetracker.exception.UserAlreadyExistsException;
 import com.financetracker.services.JWT.JwtService;
-import com.financetracker.dto.LoginRequest;
+import com.financetracker.dto.login.LoginRequest;
 import com.financetracker.entity.User;
 import com.financetracker.repository.UserRepository;
 import com.financetracker.services.UserServices.CustomUserDetailsService;
@@ -9,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +25,7 @@ public class AuthService {
 
     public User registerUser(User user) {
         if (userRepository.existsByEmail(user.getEmail())) {
-            throw new RuntimeException("User already exists");
+            throw new UserAlreadyExistsException("User with this email already exists");
         }
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));

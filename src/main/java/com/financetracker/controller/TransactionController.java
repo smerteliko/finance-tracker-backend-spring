@@ -1,7 +1,7 @@
 package com.financetracker.controller;
 
-import com.financetracker.dto.TransactionRequest;
-import com.financetracker.dto.TransactionResponse;
+import com.financetracker.dto.transaction.TransactionRequest;
+import com.financetracker.dto.transaction.TransactionResponse;
 import com.financetracker.services.Transaction.TransactionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

@@ -1,6 +1,6 @@
 package com.financetracker.controller;
 
-import com.financetracker.dto.LoginRequest;
+import com.financetracker.dto.login.LoginRequest;
 import com.financetracker.entity.User;
 import com.financetracker.services.Auth.AuthService;
 import io.swagger.v3.oas.annotations.Operation;

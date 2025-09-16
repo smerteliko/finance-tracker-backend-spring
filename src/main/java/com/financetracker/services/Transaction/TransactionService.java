@@ -1,9 +1,10 @@
 package com.financetracker.services.Transaction;
 
-import com.financetracker.dto.TransactionRequest;
-import com.financetracker.dto.TransactionResponse;
+import com.financetracker.dto.transaction.TransactionRequest;
+import com.financetracker.dto.transaction.TransactionResponse;
 import com.financetracker.entity.Category;
 import com.financetracker.entity.Transaction;
+import com.financetracker.exception.ResourceNotFoundException;
 import com.financetracker.repository.TransactionRepository;
 import com.financetracker.repository.UserRepository;
 import com.financetracker.services.Category.CategoryService;
@@ -31,7 +32,7 @@ public class TransactionService {
 
     public TransactionResponse getTransactionById(Long id) {
         Transaction transaction = transactionRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Transaction not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("Transaction not found with id " + id));
         return enrichTransactionWithCategoryData(transaction);
     }
 
@@ -54,7 +55,7 @@ public class TransactionService {
     public TransactionResponse updateTransaction(Long id, TransactionRequest request) {
         // Validate transaction exists
         Transaction existingTransaction = transactionRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Transaction not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("Transaction not found with id " + id));
 
         // Validate category exists
         categoryService.getCategoryById(request.getCategoryId());
