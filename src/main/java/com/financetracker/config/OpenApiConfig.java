@@ -15,12 +15,13 @@ import org.springframework.context.annotation.Configuration;
 import java.util.List;
 
 @Configuration
-//@SecurityScheme(
-//    name = "bearerAuth",
-//    type = SecuritySchemeType.HTTP,
-//    scheme = "bearer",
-//    bearerFormat = "JWT"
-//)
+@SecurityScheme(
+    name = "bearerAuth",
+    type = SecuritySchemeType.HTTP,
+    scheme = "bearer",
+    bearerFormat = "JWT",
+    description = "JWT authentication. First obtain a token from /api/auth/login or /api/auth/register, then include it in the Authorization header as: Bearer <token>"
+)
 public class OpenApiConfig {
 
     @Value("${server.port:8080}")

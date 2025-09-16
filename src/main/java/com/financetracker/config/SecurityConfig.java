@@ -78,7 +78,8 @@ public class SecurityConfig {
         "/configuration/security",
         "/favicon.ico",
         "/error",
-        "/actuator/health"
+        "/actuator/health",
+        "/api/auth/**"
     };
 
 }
