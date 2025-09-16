@@ -34,7 +34,7 @@ public class AuthService {
 
     public String register(User user) {
         User savedUser = registerUser(user);
-        var userDetails = userDetailsService.loadUserByUsername(savedUser.getEmail());
+        UserDetails userDetails = userDetailsService.loadUserByUsername(savedUser.getEmail());
         return jwtService.generateToken(userDetails);
     }
 
@@ -46,7 +46,7 @@ public class AuthService {
             )
         );
 
-        var userDetails = userDetailsService.loadUserByUsername(request.getEmail());
+        UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
         return jwtService.generateToken(userDetails);
     }
 }
