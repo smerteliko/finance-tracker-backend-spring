@@ -1,5 +1,7 @@
 package com.financetracker.controller;
 
+import com.financetracker.dto.error.ErrorResponse;
+import com.financetracker.dto.error.ValidationErrorResponse;
 import com.financetracker.dto.login.LoginRequest;
 import com.financetracker.entity.User;
 import com.financetracker.services.Auth.AuthService;
@@ -46,9 +48,11 @@ public class AuthController {
     )
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "User registered successfully",
-            content = @Content(schema = @Schema(example = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."))),
-        @ApiResponse(responseCode = "400", description = "Invalid input data"),
-        @ApiResponse(responseCode = "409", description = "User already exists")
+            content = @Content(schema = @Schema(example = "eyJhbGci..."))),
+        @ApiResponse(responseCode = "400", description = "Invalid input data",
+            content = @Content(schema = @Schema(implementation = ValidationErrorResponse.class))),
+        @ApiResponse(responseCode = "409", description = "User with this email already exists",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public ResponseEntity<String> register(@Valid @RequestBody User user) {
         String token = authService.register(user);

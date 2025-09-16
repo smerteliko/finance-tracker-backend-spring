@@ -1,5 +1,6 @@
 package com.financetracker.exception;
 
+import com.financetracker.dto.error.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -18,5 +19,4 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
-    public record ErrorResponse(int status, String message, long timestamp) {}
 }

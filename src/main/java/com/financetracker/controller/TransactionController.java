@@ -1,10 +1,14 @@
 package com.financetracker.controller;
 
+import com.financetracker.dto.error.ErrorResponse;
+import com.financetracker.dto.error.ValidationErrorResponse;
 import com.financetracker.dto.transaction.TransactionRequest;
 import com.financetracker.dto.transaction.TransactionResponse;
 import com.financetracker.services.Transaction.TransactionService;
 import com.financetracker.services.UserServices.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -51,6 +55,13 @@ public class TransactionController {
 
     @PostMapping
     @Operation(summary = "Create a new transaction")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Transaction created successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid input data",
+            content = @Content(schema = @Schema(implementation = ValidationErrorResponse.class))),
+        @ApiResponse(responseCode = "404", description = "User or Category not found",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
     public ResponseEntity<TransactionResponse> createTransaction(@Valid @RequestBody TransactionRequest request) {
         return ResponseEntity.ok(transactionService.createTransaction(request));
     }

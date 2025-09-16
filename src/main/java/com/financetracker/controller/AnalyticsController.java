@@ -1,6 +1,7 @@
 package com.financetracker.controller;
 
 import com.financetracker.dto.analytics.AnalyticsRequest;
+import com.financetracker.dto.analytics.AnalyticsResponse;
 import com.financetracker.services.Analytics.AnalyticsService;
 import com.financetracker.services.UserServices.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -34,7 +35,7 @@ public class AnalyticsController {
         description = "Returns comprehensive financial analytics including income, expenses, balance and category breakdown for the specified period",
         responses = {
             @ApiResponse(responseCode = "200", description = "Analytics retrieved successfully",
-                content = @Content(schema = @Schema(implementation = AnalyticsService.AnalyticsResponse.class),
+                content = @Content(schema = @Schema(implementation = AnalyticsResponse.class),
                     examples = @ExampleObject(value = """
                             {
                               "totalIncome": 3500.00,
@@ -56,7 +57,7 @@ public class AnalyticsController {
                 )
             )
         })
-    public ResponseEntity<AnalyticsService.AnalyticsResponse> getUserAnalytics(
+    public ResponseEntity<AnalyticsResponse> getUserAnalytics(
         @AuthenticationPrincipal CustomUserDetails userDetails,
         @RequestBody AnalyticsRequest request) {
         return ResponseEntity.ok(analyticsService.getUserAnalytics(userDetails.getUserId(), request.getStartDate(), request.getEndDate()));
@@ -84,8 +85,10 @@ public class AnalyticsController {
         description = "Returns the current balance for the user (all time)"
     )
     public ResponseEntity<BigDecimal> getCurrentBalance(
-        @AuthenticationPrincipal CustomUserDetails userDetails) {
-        // Implementation would calculate balance from all transactions
-        return ResponseEntity.ok(BigDecimal.valueOf(1944.50));
+        @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+
+        BigDecimal balance = analyticsService.getCurrentBalance(userDetails.getUserId());
+        return ResponseEntity.ok(balance);
     }
 }

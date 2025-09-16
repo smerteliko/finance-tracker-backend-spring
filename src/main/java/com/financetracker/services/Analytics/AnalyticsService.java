@@ -1,5 +1,6 @@
 package com.financetracker.services.Analytics;
 
+import com.financetracker.dto.analytics.AnalyticsResponse;
 import com.financetracker.dto.transaction.TransactionResponse;
 import com.financetracker.entity.Transaction;
 import com.financetracker.repository.TransactionRepository;
@@ -79,16 +80,21 @@ public class AnalyticsService {
         return recommendations;
     }
 
-    public record AnalyticsResponse(
-        BigDecimal totalIncome,
-        BigDecimal totalExpense,
-        BigDecimal balance,
-        Map<String, BigDecimal> expensesByCategory,
-        Map<String, BigDecimal> incomeByCategory,
-        int transactionCount,
-        LocalDateTime periodStart,
-        LocalDateTime periodEnd
-    ) {}
+    public BigDecimal getCurrentBalance(Long userId) {
+        List<TransactionResponse> transactions = transactionService.getUserTransactions(userId);
+
+        BigDecimal totalIncome = transactions.stream()
+            .filter(t -> t.getType() == Transaction.TransactionType.INCOME)
+            .map(TransactionResponse::getAmount)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal totalExpense = transactions.stream()
+            .filter(t -> t.getType() == Transaction.TransactionType.EXPENSE)
+            .map(TransactionResponse::getAmount)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        return totalIncome.subtract(totalExpense);
+    }
 
     public record MonthlySummaryResponse(
         AnalyticsResponse analytics,
