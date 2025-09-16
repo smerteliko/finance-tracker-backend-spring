@@ -3,6 +3,7 @@ package com.financetracker.controller;
 import com.financetracker.dto.transaction.TransactionRequest;
 import com.financetracker.dto.transaction.TransactionResponse;
 import com.financetracker.services.Transaction.TransactionService;
+import com.financetracker.services.UserServices.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -12,6 +13,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -26,10 +28,10 @@ public class TransactionController {
 
     private final TransactionService transactionService;
 
-    @GetMapping("/user/{userId}")
+    @GetMapping("/")
     @Operation(summary = "Get all transactions for user")
-    public ResponseEntity<List<TransactionResponse>> getUserTransactions(@PathVariable Long userId) {
-        return ResponseEntity.ok(transactionService.getUserTransactions(userId));
+    public ResponseEntity<List<TransactionResponse>> getUserTransactions(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        return ResponseEntity.ok(transactionService.getUserTransactions(userDetails.getUserId()));
     }
 
     @GetMapping("/{id}")
@@ -38,13 +40,13 @@ public class TransactionController {
         return ResponseEntity.ok(transactionService.getTransactionById(id));
     }
 
-    @GetMapping("/user/{userId}/period")
+    @GetMapping("/period")
     @Operation(summary = "Get user transactions by date period")
     public ResponseEntity<List<TransactionResponse>> getTransactionsByPeriod(
-        @PathVariable Long userId,
+        @AuthenticationPrincipal CustomUserDetails userDetails,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
-        return ResponseEntity.ok(transactionService.getUserTransactionsByPeriod(userId, startDate, endDate));
+        return ResponseEntity.ok(transactionService.getUserTransactionsByPeriod(userDetails.getUserId(), startDate, endDate));
     }
 
     @PostMapping

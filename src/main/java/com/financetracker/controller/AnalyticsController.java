@@ -2,6 +2,7 @@ package com.financetracker.controller;
 
 import com.financetracker.dto.analytics.AnalyticsRequest;
 import com.financetracker.services.Analytics.AnalyticsService;
+import com.financetracker.services.UserServices.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -12,6 +13,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -26,7 +28,7 @@ public class AnalyticsController {
 
     private final AnalyticsService analyticsService;
 
-    @PostMapping("/user/{userId}")
+    @PostMapping("/")
     @Operation(
         summary = "Get financial analytics for user",
         description = "Returns comprehensive financial analytics including income, expenses, balance and category breakdown for the specified period",
@@ -55,12 +57,12 @@ public class AnalyticsController {
             )
         })
     public ResponseEntity<AnalyticsService.AnalyticsResponse> getUserAnalytics(
-        @Parameter(description = "User ID", example = "1") @PathVariable Long userId,
+        @AuthenticationPrincipal CustomUserDetails userDetails,
         @RequestBody AnalyticsRequest request) {
-        return ResponseEntity.ok(analyticsService.getUserAnalytics(userId, request.getStartDate(), request.getEndDate()));
+        return ResponseEntity.ok(analyticsService.getUserAnalytics(userDetails.getUserId(), request.getStartDate(), request.getEndDate()));
     }
 
-    @GetMapping("/user/{userId}/monthly/{year}/{month}")
+    @GetMapping("/monthly/{year}/{month}")
     @Operation(
         summary = "Get monthly financial summary",
         description = "Returns monthly financial summary with analytics and budget recommendations",
@@ -70,19 +72,19 @@ public class AnalyticsController {
         }
     )
     public ResponseEntity<AnalyticsService.MonthlySummaryResponse> getMonthlySummary(
-        @Parameter(description = "User ID", example = "1") @PathVariable Long userId,
+        @AuthenticationPrincipal CustomUserDetails userDetails,
         @Parameter(description = "Year", example = "2024") @PathVariable int year,
         @Parameter(description = "Month", example = "JANUARY") @PathVariable Month month) {
-        return ResponseEntity.ok(analyticsService.getMonthlySummary(userId, year, month));
+        return ResponseEntity.ok(analyticsService.getMonthlySummary(userDetails.getUserId(), year, month));
     }
 
-    @GetMapping("/user/{userId}/balance")
+    @GetMapping("/balance")
     @Operation(
         summary = "Get current balance",
         description = "Returns the current balance for the user (all time)"
     )
     public ResponseEntity<BigDecimal> getCurrentBalance(
-        @Parameter(description = "User ID", example = "1") @PathVariable Long userId) {
+        @AuthenticationPrincipal CustomUserDetails userDetails) {
         // Implementation would calculate balance from all transactions
         return ResponseEntity.ok(BigDecimal.valueOf(1944.50));
     }
