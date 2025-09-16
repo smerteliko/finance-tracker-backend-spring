@@ -2,6 +2,7 @@ package com.financetracker.controller;
 
 import com.financetracker.dto.analytics.AnalyticsRequest;
 import com.financetracker.services.Reports.ReportService;
+import com.financetracker.services.UserServices.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -9,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -20,13 +22,13 @@ public class ReportController {
 
     private final ReportService reportService;
 
-    @PostMapping("/user/{userId}/csv")
+    @PostMapping("/csv")
     @Operation(summary = "Generate CSV report", description = "Generates a CSV report of transactions for the specified period")
     public ResponseEntity<String> generateCSVReport(
-        @PathVariable Long userId,
+        @AuthenticationPrincipal CustomUserDetails userDetails,
         @RequestBody AnalyticsRequest request) {
 
-        String csv = reportService.generateCSVReport(userId, request.getStartDate(), request.getEndDate());
+        String csv = reportService.generateCSVReport(userDetails.getUserId(), request.getStartDate(), request.getEndDate());
 
         return ResponseEntity.ok()
             .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=transactions-report.csv")
@@ -34,13 +36,13 @@ public class ReportController {
             .body(csv);
     }
 
-    @PostMapping("/user/{userId}/summary")
+    @PostMapping("/summary")
     @Operation(summary = "Generate text summary", description = "Generates a text summary of transactions for the specified period")
     public ResponseEntity<String> generateTextSummary(
-        @PathVariable Long userId,
+        @AuthenticationPrincipal CustomUserDetails userDetails,
         @RequestBody AnalyticsRequest request) {
 
-        String summary = reportService.generateTextSummary(userId, request.getStartDate(), request.getEndDate());
+        String summary = reportService.generateTextSummary(userDetails.getUserId(), request.getStartDate(), request.getEndDate());
         return ResponseEntity.ok(summary);
     }
 }

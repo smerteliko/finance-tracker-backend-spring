@@ -13,9 +13,9 @@ jobs:
       postgres:
         image: postgres:15-alpine
         env:
-          POSTGRES_DB: test_db
-          POSTGRES_USER: test_user
-          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: finance_test_db
+          POSTGRES_USER: finance_test_user
+          POSTGRES_PASSWORD: finance_test_password
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -32,9 +32,18 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
+      - name: Wait for PostgreSQL
+        run: |
+          # Wait for the database service to be ready
+          while ! nc -z localhost 5432; do   
+            sleep 1
+          done
+
       - name: Build and test with Maven
         run: mvn clean package
         env:
-          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/test_db
-          SPRING_DATASOURCE_USERNAME: test_user
-          SPRING_DATASOURCE_PASSWORD: test_password
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/finance_test_db
+          SPRING_DATASOURCE_USERNAME: finance_test_user
+          SPRING_DATASOURCE_PASSWORD: finance_test_password
+          SPRING_JPA_HIBERNATE_DDL-AUTO: update
+          SPRING_FLYWAY_ENABLED: true
