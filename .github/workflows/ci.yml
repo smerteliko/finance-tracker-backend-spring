@@ -35,7 +35,7 @@ jobs:
       - name: Build and test with Maven
         run: mvn clean package
         env:
-          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/finance_test_db
+          SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/finance_test_db
           SPRING_DATASOURCE_USERNAME: finance_test_user
           SPRING_DATASOURCE_PASSWORD: finance_test_password
           SPRING_JPA_HIBERNATE_DDL-AUTO: update
