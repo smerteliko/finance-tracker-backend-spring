@@ -32,6 +32,16 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
+      - name: Wait for PostgreSQL
+        run: |
+          for i in $(seq 1 30); do
+            nc -z finance-test-db 5432 && echo "Database is ready!" && exit 0
+            echo "Waiting for PostgreSQL service..."
+            sleep 1
+          done
+          echo "PostgreSQL service failed to start."
+          exit 1
+
       - name: Build and test with Maven
         run: mvn clean package -Dspring.profiles.active=test
         env:
