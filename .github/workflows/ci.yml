@@ -33,7 +33,7 @@ jobs:
           cache: 'maven'
 
       - name: Build and test with Maven
-        run: mvn clean package --settings .github/maven-settings.xml -Dspring.profiles.active=test
+        run: mvn clean package -Dspring.profiles.active=test
         env:
           SPRING_DATASOURCE_URL: jdbc:postgresql://finance-test-db:5432/finance_test_db
           SPRING_DATASOURCE_USERNAME: finance_test_user
