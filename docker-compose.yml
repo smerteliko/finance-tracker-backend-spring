@@ -11,6 +11,8 @@ services:
       - "5432:5432"
     volumes:
       - postgres_prod_data:/var/lib/postgresql/data
+    networks:
+      - finance-network
 
   finance-test-db:
     image: postgres:15-alpine
@@ -23,6 +25,8 @@ services:
       - "5433:5432"
     volumes:
       - postgres_test_data:/var/lib/postgresql/data
+    networks:
+      - finance-network
 
   backend:
     build: .
@@ -30,7 +34,7 @@ services:
       - "8080:8080"
     environment:
       SPRING_PROFILES_ACTIVE: prod
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/finance_db
+      SPRING_DATASOURCE_URL: jdbc:postgresql://finance-prod-db:5432/finance_db
       SPRING_DATASOURCE_USERNAME: finance_user
       SPRING_DATASOURCE_PASSWORD: finance_password
     depends_on:
@@ -39,8 +43,14 @@ services:
     volumes:
       - .:/app
       - maven-data:/root/.m2
+    networks:
+      - finance-network
 
 volumes:
   postgres_prod_data:
   postgres_test_data:
   maven-data:
+
+networks:
+  finance-network:
+    driver: bridge
