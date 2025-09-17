@@ -10,17 +10,19 @@ jobs:
   test:
     runs-on: ubuntu-latest
     services:
-      postgres:
+      finance-test-db:
         image: postgres:15-alpine
         env:
-          POSTGRES_DB: test_db
-          POSTGRES_USER: test_user
-          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: finance_test_db
+          POSTGRES_USER: finance_test_user
+          POSTGRES_PASSWORD: finance_test_password
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+        ports:
+          - 5432:5432
 
     steps:
       - uses: actions/checkout@v4
@@ -33,8 +35,10 @@ jobs:
           cache: 'maven'
 
       - name: Build and test with Maven
-        run: mvn clean package
+        run: mvn clean package -Dspring.profiles.active=test
         env:
-          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/test_db
-          SPRING_DATASOURCE_USERNAME: test_user
-          SPRING_DATASOURCE_PASSWORD: test_password
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/finance_test_db
+          SPRING_DATASOURCE_USERNAME: finance_test_user
+          SPRING_DATASOURCE_PASSWORD: finance_test_password
+          SPRING_JPA_HIBERNATE_DDL-AUTO: create
+          SPRING_FLYWAY_ENABLED: true
