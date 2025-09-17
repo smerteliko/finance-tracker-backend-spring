@@ -21,6 +21,8 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+        ports:
+          - 5432:5432
 
     steps:
       - uses: actions/checkout@v4
@@ -32,21 +34,11 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Wait for PostgreSQL
-        run: |
-          for i in $(seq 1 30); do
-            nc -z finance-test-db 5432 && echo "Database is ready!" && exit 0
-            echo "Waiting for PostgreSQL service..."
-            sleep 1
-          done
-          echo "PostgreSQL service failed to start."
-          exit 1
-
       - name: Build and test with Maven
         run: mvn clean package -Dspring.profiles.active=test
         env:
-          SPRING_DATASOURCE_URL: jdbc:postgresql://finance-test-db:5432/finance_test_db
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/finance_test_db
           SPRING_DATASOURCE_USERNAME: finance_test_user
           SPRING_DATASOURCE_PASSWORD: finance_test_password
           SPRING_JPA_HIBERNATE_DDL-AUTO: create
-          SPRING_FLYWAY_ENABLED: false
+          SPRING_FLYWAY_ENABLED: true
