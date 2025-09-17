@@ -32,13 +32,6 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Wait for PostgreSQL
-        run: |
-          # Wait for the database service to be ready
-          while ! nc -z localhost 5432; do   
-            sleep 1
-          done
-
       - name: Build and test with Maven
         run: mvn clean package
         env:
