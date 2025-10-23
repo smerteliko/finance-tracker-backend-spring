@@ -7,6 +7,7 @@ import com.financetracker.dto.transaction.TransactionResponse;
 import com.financetracker.services.Transaction.TransactionService;
 import com.financetracker.services.UserServices.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -34,7 +35,7 @@ public class TransactionController {
 
     @GetMapping("/")
     @Operation(summary = "Get all transactions for user")
-    public ResponseEntity<List<TransactionResponse>> getUserTransactions(@AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ResponseEntity<List<TransactionResponse>> getUserTransactions( @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails) {
         return ResponseEntity.ok(transactionService.getUserTransactions(userDetails.getUserId()));
     }
 
@@ -47,7 +48,7 @@ public class TransactionController {
     @GetMapping("/period")
     @Operation(summary = "Get user transactions by date period")
     public ResponseEntity<List<TransactionResponse>> getTransactionsByPeriod(
-        @AuthenticationPrincipal CustomUserDetails userDetails,
+        @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
         return ResponseEntity.ok(transactionService.getUserTransactionsByPeriod(userDetails.getUserId(), startDate, endDate));
@@ -62,20 +63,27 @@ public class TransactionController {
         @ApiResponse(responseCode = "404", description = "User or Category not found",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    public ResponseEntity<TransactionResponse> createTransaction(@Valid @RequestBody TransactionRequest request) {
-        return ResponseEntity.ok(transactionService.createTransaction(request));
+    public ResponseEntity<TransactionResponse> createTransaction(
+        @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails,
+        @Valid @RequestBody TransactionRequest request
+    ) {
+        return ResponseEntity.ok(transactionService.createTransaction(request, userDetails.getUserId()));
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "Update a transaction")
+    @Schema(hidden = true)
     public ResponseEntity<TransactionResponse> updateTransaction(
         @PathVariable Long id,
-        @Valid @RequestBody TransactionRequest request) {
-        return ResponseEntity.ok(transactionService.updateTransaction(id, request));
+        @Valid @RequestBody TransactionRequest request,
+        @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        return ResponseEntity.ok(transactionService.updateTransaction(id, request, userDetails.getUserId()));
     }
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete a transaction")
+    @Schema(hidden = true)
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Transaction deleted successfully"),
         @ApiResponse(responseCode = "404", description = "Transaction not found")

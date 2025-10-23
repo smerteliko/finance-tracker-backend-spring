@@ -73,7 +73,7 @@ public class AnalyticsController {
         }
     )
     public ResponseEntity<AnalyticsService.MonthlySummaryResponse> getMonthlySummary(
-        @AuthenticationPrincipal CustomUserDetails userDetails,
+        @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails,
         @Parameter(description = "Year", example = "2024") @PathVariable int year,
         @Parameter(description = "Month", example = "JANUARY") @PathVariable Month month) {
         return ResponseEntity.ok(analyticsService.getMonthlySummary(userDetails.getUserId(), year, month));
@@ -85,7 +85,7 @@ public class AnalyticsController {
         description = "Returns the current balance for the user (all time)"
     )
     public ResponseEntity<BigDecimal> getCurrentBalance(
-        @AuthenticationPrincipal CustomUserDetails userDetails
+        @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
 
         BigDecimal balance = analyticsService.getCurrentBalance(userDetails.getUserId());

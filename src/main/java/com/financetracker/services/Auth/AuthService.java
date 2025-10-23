@@ -1,5 +1,6 @@
 package com.financetracker.services.Auth;
 
+import com.financetracker.dto.login.LoginResponse;
 import com.financetracker.exception.UserAlreadyExistsException;
 import com.financetracker.services.JWT.JwtService;
 import com.financetracker.dto.login.LoginRequest;
@@ -8,8 +9,10 @@ import com.financetracker.repository.UserRepository;
 import com.financetracker.services.UserServices.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -38,15 +41,26 @@ public class AuthService {
         return jwtService.generateToken(userDetails);
     }
 
-    public String login(LoginRequest request) {
-        authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(
-                request.getEmail(),
-                request.getPassword()
-            )
-        );
+    public LoginResponse login(LoginRequest request) {
+        try {
+            authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                    request.getEmail(),
+                    request.getPassword()
+                )
+            );
+        } catch (BadCredentialsException e) {
+            throw new RuntimeException("Invalid email or password");
+        }
+
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
-        return jwtService.generateToken(userDetails);
+        String token = jwtService.generateToken(userDetails);
+
+        // Find the user to get the ID
+        User user = userRepository.findByEmail(request.getEmail())
+            .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        return new LoginResponse(token, user.getId(), user.getFirstName(), user.getLastName());
     }
 }

@@ -3,6 +3,7 @@ package com.financetracker.controller;
 import com.financetracker.dto.error.ErrorResponse;
 import com.financetracker.dto.error.ValidationErrorResponse;
 import com.financetracker.dto.login.LoginRequest;
+import com.financetracker.dto.login.LoginResponse;
 import com.financetracker.entity.User;
 import com.financetracker.exception.UserAlreadyExistsException;
 import com.financetracker.services.Auth.AuthService;
@@ -85,9 +86,9 @@ public class AuthController {
         @ApiResponse(responseCode = "400", description = "Invalid credentials format"),
         @ApiResponse(responseCode = "401", description = "Invalid email or password")
     })
-    public ResponseEntity<String> login(@Valid @RequestBody LoginRequest request) {
-        String token = authService.login(request);
-        return ResponseEntity.ok(token);
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
+        LoginResponse response = authService.login(request);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/token-info")
