@@ -3,7 +3,9 @@ package com.financetracker.services.Analytics;
 import com.financetracker.dto.analytics.AnalyticsResponse;
 import com.financetracker.dto.transaction.TransactionResponse;
 import com.financetracker.entity.Transaction;
+import com.financetracker.entity.User;
 import com.financetracker.repository.TransactionRepository;
+import com.financetracker.repository.UserRepository;
 import com.financetracker.services.Transaction.TransactionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,6 +23,7 @@ public class AnalyticsService {
 
     private final TransactionService transactionService;
     private final TransactionRepository transactionRepository;
+    private final UserRepository userRepository;
 
     public AnalyticsResponse getUserAnalytics(Long userId, LocalDateTime startDate, LocalDateTime endDate) {
         List<TransactionResponse> transactions = transactionService.getUserTransactionsByPeriod(userId, startDate, endDate);
@@ -57,7 +60,6 @@ public class AnalyticsService {
     public MonthlySummaryResponse getMonthlySummary(Long userId, int year, Month month) {
         LocalDateTime startDate = LocalDateTime.of(year, month, 1, 0, 0);
         LocalDateTime endDate = startDate.plusMonths(1).minusSeconds(1);
-
         AnalyticsResponse analytics = getUserAnalytics(userId, startDate, endDate);
 
         return new MonthlySummaryResponse(
@@ -80,26 +82,43 @@ public class AnalyticsService {
         return recommendations;
     }
 
-    public BigDecimal getCurrentBalance(Long userId) {
-        List<TransactionResponse> transactions = transactionService.getUserTransactions(userId);
-
-        BigDecimal totalIncome = transactions.stream()
-            .filter(t -> t.getType() == Transaction.TransactionType.INCOME)
-            .map(TransactionResponse::getAmount)
-            .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        BigDecimal totalExpense = transactions.stream()
-            .filter(t -> t.getType() == Transaction.TransactionType.EXPENSE)
-            .map(TransactionResponse::getAmount)
-            .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        return totalIncome.subtract(totalExpense);
-    }
-
     public record MonthlySummaryResponse(
         AnalyticsResponse analytics,
         Month month,
         int year,
         Map<String, BigDecimal> budgetRecommendations
     ) {}
+
+
+    public BigDecimal getCurrentBalance(Long userId) {
+        List<Transaction> allTransactions = transactionRepository.findByUserOrderByDateDesc(
+            userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"))
+        );
+
+        return calculateBalance(allTransactions);
+    }
+
+    public BigDecimal getBalanceForPeriod(Long userId, LocalDateTime startDate, LocalDateTime endDate) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+
+        List<Transaction> periodTransactions = transactionRepository.findByUserAndDateBetweenOrderByDateDesc(
+            user, startDate, endDate
+        );
+
+        return calculateBalance(periodTransactions);
+    }
+
+    private BigDecimal calculateBalance(List<Transaction> transactions) {
+        BigDecimal balance = BigDecimal.ZERO;
+        for (Transaction transaction : transactions) {
+            if (transaction.getType() == Transaction.TransactionType.INCOME) {
+                balance = balance.add(transaction.getAmount());
+            } else {
+                balance = balance.subtract(transaction.getAmount());
+            }
+        }
+        return balance;
+    }
 }

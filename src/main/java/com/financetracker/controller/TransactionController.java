@@ -2,6 +2,8 @@ package com.financetracker.controller;
 
 import com.financetracker.dto.error.ErrorResponse;
 import com.financetracker.dto.error.ValidationErrorResponse;
+import com.financetracker.dto.pagination.PagedResponse;
+import com.financetracker.dto.transaction.TransactionFilterRequest;
 import com.financetracker.dto.transaction.TransactionRequest;
 import com.financetracker.dto.transaction.TransactionResponse;
 import com.financetracker.services.Transaction.TransactionService;
@@ -45,6 +47,14 @@ public class TransactionController {
         return ResponseEntity.ok(transactionService.getTransactionById(id));
     }
 
+    @PostMapping("/filter")
+    @Operation(summary = "Get filtered and paginated transactions for current user")
+    public ResponseEntity<PagedResponse<TransactionResponse>> getFilteredTransactions(
+        @RequestBody TransactionFilterRequest filter,
+        @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails) {
+        return ResponseEntity.ok(transactionService.getUserTransactionsWithFilter(userDetails.getUserId(), filter));
+    }
+
     @GetMapping("/period")
     @Operation(summary = "Get user transactions by date period")
     public ResponseEntity<List<TransactionResponse>> getTransactionsByPeriod(
@@ -71,8 +81,7 @@ public class TransactionController {
     }
 
     @PutMapping("/{id}")
-    @Operation(summary = "Update a transaction")
-    @Schema(hidden = true)
+    @Operation(summary = "Update a transaction", hidden = true)
     public ResponseEntity<TransactionResponse> updateTransaction(
         @PathVariable Long id,
         @Valid @RequestBody TransactionRequest request,
@@ -82,8 +91,7 @@ public class TransactionController {
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Delete a transaction")
-    @Schema(hidden = true)
+    @Operation(summary = "Delete a transaction", hidden = true)
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Transaction deleted successfully"),
         @ApiResponse(responseCode = "404", description = "Transaction not found")

@@ -91,4 +91,12 @@ public class AnalyticsController {
         BigDecimal balance = analyticsService.getCurrentBalance(userDetails.getUserId());
         return ResponseEntity.ok(balance);
     }
+
+    @PostMapping("/period-balance")
+    @Operation(summary = "Get balance for specific period for current user")
+    public ResponseEntity<BigDecimal> getBalanceForPeriod(
+        @RequestBody AnalyticsRequest request,
+        @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails) {
+        return ResponseEntity.ok(analyticsService.getBalanceForPeriod(userDetails.getUserId(), request.getStartDate(), request.getEndDate()));
+    }
 }

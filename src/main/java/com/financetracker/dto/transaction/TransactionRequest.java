@@ -49,14 +49,6 @@ public class TransactionRequest {
 
     @NotNull
     @Schema(
-        description = "User ID who owns this transaction",
-        example = "1",
-        requiredMode = Schema.RequiredMode.REQUIRED
-    )
-    private Long userId;
-
-    @NotNull
-    @Schema(
         description = "Category ID for this transaction",
         example = "4",
         requiredMode = Schema.RequiredMode.REQUIRED
