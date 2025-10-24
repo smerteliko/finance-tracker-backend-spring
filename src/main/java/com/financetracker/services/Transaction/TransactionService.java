@@ -1,15 +1,22 @@
 package com.financetracker.services.Transaction;
 
+import com.financetracker.dto.pagination.PagedResponse;
+import com.financetracker.dto.transaction.TransactionFilterRequest;
 import com.financetracker.dto.transaction.TransactionRequest;
 import com.financetracker.dto.transaction.TransactionResponse;
 import com.financetracker.entity.Category;
 import com.financetracker.entity.Transaction;
+import com.financetracker.entity.User;
 import com.financetracker.exception.ResourceNotFoundException;
 import com.financetracker.repository.TransactionRepository;
 import com.financetracker.repository.UserRepository;
 import com.financetracker.services.Category.CategoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -24,7 +31,9 @@ public class TransactionService {
     private final UserRepository userRepository;
 
     public List<TransactionResponse> getUserTransactions(Long userId) {
-        return transactionRepository.findByUserIdOrderByDateDesc(userId)
+        return transactionRepository.findByUserOrderByDateDesc(userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"))
+            )
             .stream()
             .map(this::enrichTransactionWithCategoryData)
             .collect(Collectors.toList());
@@ -36,15 +45,16 @@ public class TransactionService {
         return enrichTransactionWithCategoryData(transaction);
     }
 
-    public TransactionResponse createTransaction(TransactionRequest request) {
-        // Validate category exists
+    public TransactionResponse createTransaction(TransactionRequest request, Long authenticatedUserId) {
+        User user = userRepository.findById(authenticatedUserId)
+            .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + authenticatedUserId));
         categoryService.getCategoryById(request.getCategoryId());
         Transaction transaction = new Transaction();
         transaction.setAmount(request.getAmount());
         transaction.setDescription(request.getDescription());
         transaction.setType(request.getType());
         transaction.setDate(request.getDate());
-        transaction.setUser(userRepository.getReferenceById(request.getUserId()));
+        transaction.setUser(user);
         transaction.setCategory(categoryService.getCategoryById(request.getCategoryId()));
 
 
@@ -52,10 +62,14 @@ public class TransactionService {
         return enrichTransactionWithCategoryData(savedTransaction);
     }
 
-    public TransactionResponse updateTransaction(Long id, TransactionRequest request) {
+    public TransactionResponse updateTransaction(Long id, TransactionRequest request, Long authenticatedUserId) {
         // Validate transaction exists
         Transaction existingTransaction = transactionRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Transaction not found with id " + id));
+
+        if (!existingTransaction.getUser().getId().equals(authenticatedUserId)) {
+            throw new RuntimeException("Access denied - transaction does not belong to user");
+        }
 
         // Validate category exists
         categoryService.getCategoryById(request.getCategoryId());
@@ -95,5 +109,68 @@ public class TransactionService {
             response.setCategoryColor("#CCCCCC");
         }
         return response;
+    }
+
+    public PagedResponse<TransactionResponse> getUserTransactionsWithFilter(Long userId, TransactionFilterRequest filter) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+
+        LocalDateTime startDate = filter.getStartDate();
+        LocalDateTime endDate = filter.getEndDate();
+
+        if (startDate == null || endDate == null) {
+            LocalDateTime now = LocalDateTime.now();
+            startDate = now.withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0);
+            endDate = now.withDayOfMonth(now.toLocalDate().lengthOfMonth()).withHour(23).withMinute(59).withSecond(59);
+        }
+
+        Pageable pageable = PageRequest.of(filter.getPage(), filter.getSize(), Sort.by("date").descending());
+        Page<Transaction> transactionsPage;
+
+        if (filter.getType() != null && filter.getCategoryId() != null) {
+            Transaction.TransactionType type = Transaction.TransactionType.valueOf(filter.getType());
+            transactionsPage = transactionRepository.findByUserIdAndTypeAndCategoryIdAndDateBetweenOrderByDateDesc(
+                userId, type, filter.getCategoryId(), startDate, endDate, pageable);
+        } else if (filter.getType() != null) {
+            Transaction.TransactionType type = Transaction.TransactionType.valueOf(filter.getType());
+            transactionsPage = transactionRepository.findByUserIdAndTypeAndDateBetweenOrderByDateDesc(
+                userId, type, startDate, endDate, pageable);
+        } else if (filter.getCategoryId() != null) {
+            transactionsPage = transactionRepository.findByUserIdAndCategoryIdAndDateBetweenOrderByDateDesc(
+                userId, filter.getCategoryId(), startDate, endDate, pageable);
+        } else {
+            transactionsPage = transactionRepository.findByUserIdAndDateBetweenOrderByDateDesc(
+                userId, startDate, endDate, pageable);
+        }
+
+        List<TransactionResponse> content = transactionsPage.getContent()
+            .stream()
+            .map(this::enrichTransactionWithCategoryData)
+            .collect(Collectors.toList());
+
+        return new PagedResponse<>(
+            content,
+            transactionsPage.getNumber(),
+            transactionsPage.getSize(),
+            transactionsPage.getTotalElements(),
+            transactionsPage.getTotalPages()
+        );
+    }
+
+    public List<TransactionResponse> getUserTransactionsForExport(Long userId, LocalDateTime startDate, LocalDateTime endDate) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (startDate == null || endDate == null) {
+            LocalDateTime now = LocalDateTime.now();
+            startDate = now.withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0);
+            endDate = now.withDayOfMonth(now.toLocalDate().lengthOfMonth()).withHour(23).withMinute(59).withSecond(59);
+        }
+
+        List<Transaction> transactions = transactionRepository.findAllByUserIdAndDateBetweenOrderByDateDesc(userId, startDate, endDate);
+
+        return transactions.stream()
+            .map(this::enrichTransactionWithCategoryData)
+            .collect(Collectors.toList());
     }
 }
