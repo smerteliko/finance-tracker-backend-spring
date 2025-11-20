@@ -6,6 +6,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
+
 
 public class CustomUserDetails implements UserDetails {
 
@@ -20,6 +22,10 @@ public class CustomUserDetails implements UserDetails {
         return List.of(new SimpleGrantedAuthority("ROLE_USER"));
     }
 
+    public User getUser() {
+        return user;
+    }
+
     @Override
     public String getPassword() {
         return user.getPassword();
@@ -30,11 +36,10 @@ public class CustomUserDetails implements UserDetails {
         return user.getEmail();
     }
 
-    public Long getUserId() {
+    public UUID getUserId() {
         return user.getId();
     }
 
-    // Остальные методы UserDetails
     @Override
     public boolean isAccountNonExpired() { return true; }
 

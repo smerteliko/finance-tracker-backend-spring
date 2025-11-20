@@ -17,13 +17,9 @@ import java.util.UUID;
 public abstract class BaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Comment("Unique record identifier (auto-increment)")
-    private Long id;
-
-    @Column(unique = true, nullable = false, updatable = false)
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Comment("Public unique identifier for API")
-    private String uuid = UUID.randomUUID().toString();
+    private UUID id;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -35,15 +31,8 @@ public abstract class BaseEntity {
     @Comment("Record last update timestamp")
     private LocalDateTime updatedAt;
 
-    @Version
-    @Comment("Record version for optimistic locking")
-    private Long version;
-
     @PrePersist
     protected void onCreate() {
-        if (uuid == null) {
-            uuid = UUID.randomUUID().toString();
-        }
         if (createdAt == null) {
             createdAt = LocalDateTime.now();
         }

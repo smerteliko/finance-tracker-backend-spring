@@ -5,9 +5,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
-@Data
 @Schema(description = "User login credentials")
-public class LoginRequest {
+public record LoginRequest (
 
     @NotBlank
     @Schema(
@@ -15,7 +14,7 @@ public class LoginRequest {
         example = "john.doe@email.com",
         requiredMode = Schema.RequiredMode.REQUIRED
     )
-    private String email;
+     String email,
 
     @NotBlank
     @Schema(
@@ -24,5 +23,5 @@ public class LoginRequest {
         requiredMode = Schema.RequiredMode.REQUIRED,
         minLength = 6
     )
-    private String password;
-}
+     String password
+){}

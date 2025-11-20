@@ -1,6 +1,7 @@
 package com.financetracker.dto.transaction;
 
 import com.financetracker.entity.Transaction;
+import com.financetracker.enums.TransactionType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -8,10 +9,11 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
-@Data
+
 @Schema(description = "Transaction creation and update request")
-public class TransactionRequest {
+public record TransactionRequest (
 
     @NotNull
     @Positive
@@ -21,14 +23,14 @@ public class TransactionRequest {
         requiredMode = Schema.RequiredMode.REQUIRED,
         minimum = "0.01"
     )
-    private BigDecimal amount;
+     BigDecimal amount,
 
     @Schema(
         description = "Transaction description",
         example = "Weekly groceries shopping at supermarket",
         maxLength = 500
     )
-    private String description;
+     String description,
 
     @NotNull
     @Schema(
@@ -37,7 +39,7 @@ public class TransactionRequest {
         requiredMode = Schema.RequiredMode.REQUIRED,
         allowableValues = {"INCOME", "EXPENSE"}
     )
-    private Transaction.TransactionType type;
+    TransactionType type,
 
     @NotNull
     @Schema(
@@ -45,7 +47,7 @@ public class TransactionRequest {
         example = "2024-01-15T10:30:00",
         requiredMode = Schema.RequiredMode.REQUIRED
     )
-    private LocalDateTime date;
+     LocalDateTime date,
 
     @NotNull
     @Schema(
@@ -53,5 +55,9 @@ public class TransactionRequest {
         example = "4",
         requiredMode = Schema.RequiredMode.REQUIRED
     )
-    private Long categoryId;
-}
+    UUID categoryId,
+
+    @Schema(description = "Unique account identifier", example = "a2b4c6d8-9e10-11f2-b345-123456789012")
+    @NotNull(message = "Account ID cannot be empty")
+    UUID accountId
+){}

@@ -3,6 +3,7 @@ package com.financetracker.dto.analytics;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 @Schema(description = "Comprehensive financial analytics for a specified period.")
@@ -17,13 +18,13 @@ public record AnalyticsResponse(
     BigDecimal balance,
 
     @Schema(description = "Breakdown of expenses by category.", example = "{\"Groceries\": 285.50, \"Rent\": 1200.00}")
-    Map<String, BigDecimal> expensesByCategory,
+    List<CategorySummary> expensesByCategory,
 
     @Schema(description = "Breakdown of income by category.", example = "{\"Salary\": 3500.00}")
-    Map<String, BigDecimal> incomeByCategory,
+    List<CategorySummary> incomeByCategory,
 
     @Schema(description = "Total number of transactions in the period.", example = "15")
-    int transactionCount,
+    long transactionCount,
 
     @Schema(description = "Start date and time of the analysis period.", example = "2024-01-01T00:00:00")
     LocalDateTime periodStart,

@@ -2,6 +2,8 @@ package com.financetracker.dto.error;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
+import java.time.LocalDateTime;
+
 @Schema(description = "Standardized error response format.")
 public record ErrorResponse(
     @Schema(description = "The HTTP status code.", example = "400")
@@ -11,5 +13,5 @@ public record ErrorResponse(
     String message,
 
     @Schema(description = "The timestamp when the error occurred.", example = "1678886400000")
-    long timestamp
+    LocalDateTime timestamp
 ) {}

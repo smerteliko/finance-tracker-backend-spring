@@ -2,19 +2,15 @@ package com.financetracker.dto.analytics;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
-import lombok.Data;
+import java.time.LocalDate;
 
-import java.time.LocalDateTime;
+@Schema(description = "Request for fetching analytics data within a date range")
+public record AnalyticsRequest(
+    @Schema(description = "Start date (inclusive)", example = "2023-01-01")
+    @NotNull(message = "Start date cannot be empty")
+    LocalDate startDate,
 
-@Data
-@Schema(description = "Analytics period request")
-public class AnalyticsRequest {
-
-    @NotNull
-    @Schema(description = "Start date of the period", example = "2024-01-01T00:00:00")
-    private LocalDateTime startDate;
-
-    @NotNull
-    @Schema(description = "End date of the period", example = "2024-01-31T23:59:59")
-    private LocalDateTime endDate;
-}
+    @Schema(description = "End date (inclusive)", example = "2023-12-31")
+    @NotNull(message = "End date cannot be empty")
+    LocalDate endDate
+) {}
