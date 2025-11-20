@@ -1,124 +1,78 @@
 package com.financetracker.services.Analytics;
 
+import com.financetracker.dto.analytics.AnalyticsRequest;
 import com.financetracker.dto.analytics.AnalyticsResponse;
-import com.financetracker.dto.transaction.TransactionResponse;
-import com.financetracker.entity.Transaction;
+import com.financetracker.dto.analytics.CategorySummary;
+import com.financetracker.dto.analytics.MonthlySummaryResponse;
 import com.financetracker.entity.User;
+import com.financetracker.enums.CategoryType;
+import com.financetracker.enums.TransactionType;
 import com.financetracker.repository.TransactionRepository;
-import com.financetracker.repository.UserRepository;
-import com.financetracker.services.Transaction.TransactionService;
+import com.financetracker.utils.UserUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.Month;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class AnalyticsService {
 
-    private final TransactionService transactionService;
     private final TransactionRepository transactionRepository;
-    private final UserRepository userRepository;
 
-    public AnalyticsResponse getUserAnalytics(Long userId, LocalDateTime startDate, LocalDateTime endDate) {
-        List<TransactionResponse> transactions = transactionService.getUserTransactionsByPeriod(userId, startDate, endDate);
+    @Transactional(readOnly = true)
+    public BigDecimal getCurrentBalance() {
+        User user = UserUtils.getCurrentUser();
 
-        BigDecimal totalIncome = BigDecimal.ZERO;
-        BigDecimal totalExpense = BigDecimal.ZERO;
-        Map<String, BigDecimal> expensesByCategory = new HashMap<>();
-        Map<String, BigDecimal> incomeByCategory = new HashMap<>();
+        BigDecimal income = transactionRepository.sumIncome(user);
+        BigDecimal expense = transactionRepository.sumExpense(user);
 
-        for (TransactionResponse transaction : transactions) {
-            if (transaction.getType() == Transaction.TransactionType.INCOME) {
-                totalIncome = totalIncome.add(transaction.getAmount());
-                incomeByCategory.merge(transaction.getCategoryName(), transaction.getAmount(), BigDecimal::add);
-            } else {
-                totalExpense = totalExpense.add(transaction.getAmount());
-                expensesByCategory.merge(transaction.getCategoryName(), transaction.getAmount(), BigDecimal::add);
-            }
+        return income.subtract(expense);
+    }
+
+    @Transactional(readOnly = true)
+    public AnalyticsResponse getAnalyticsForPeriod(AnalyticsRequest request) {
+        User currentUser = UserUtils.getCurrentUser();
+
+        LocalDate startDate;
+        LocalDate endDate;
+
+        if (request == null || request.startDate() == null) {
+            startDate = LocalDate.now().minusDays(30);
+        } else {
+            startDate = request.startDate();
         }
 
-        BigDecimal balance = totalIncome.subtract(totalExpense);
+        if (request == null || request.endDate() == null) {
+            endDate = LocalDate.now();
+        } else {
+            endDate = request.endDate();
+        }
+
+        LocalDateTime startDateTime = startDate.atStartOfDay();
+        LocalDateTime endDateTime = endDate.plusDays(1).atStartOfDay();
+
+        BigDecimal totalIncome = transactionRepository.sumIncomeByPeriod(currentUser, startDateTime, endDateTime);
+        BigDecimal totalExpense = transactionRepository.sumExpenseByPeriod(currentUser, startDateTime, endDateTime);
+        long transactionCount = transactionRepository.countByPeriod(currentUser, startDateTime, endDateTime);
+
+        List<CategorySummary> incomeBreakdown = transactionRepository.getCategoryBreakdown(currentUser, CategoryType.INCOME, startDateTime, endDateTime);
+        List<CategorySummary> expenseBreakdown = transactionRepository.getCategoryBreakdown(currentUser, CategoryType.EXPENSE, startDateTime, endDateTime);
 
         return new AnalyticsResponse(
             totalIncome,
             totalExpense,
-            balance,
-            expensesByCategory,
-            incomeByCategory,
-            transactions.size(),
-            startDate,
-            endDate
+            totalIncome.subtract(totalExpense), // Net Balance
+            incomeBreakdown,
+            expenseBreakdown,
+            transactionCount,
+            startDateTime,
+            endDateTime
         );
     }
 
-    public MonthlySummaryResponse getMonthlySummary(Long userId, int year, Month month) {
-        LocalDateTime startDate = LocalDateTime.of(year, month, 1, 0, 0);
-        LocalDateTime endDate = startDate.plusMonths(1).minusSeconds(1);
-        AnalyticsResponse analytics = getUserAnalytics(userId, startDate, endDate);
-
-        return new MonthlySummaryResponse(
-            analytics,
-            month,
-            year,
-            calculateBudgetRecommendations(analytics)
-        );
-    }
-
-    private Map<String, BigDecimal> calculateBudgetRecommendations(AnalyticsResponse analytics) {
-        Map<String, BigDecimal> recommendations = new HashMap<>();
-
-        // Basic budget recommendation: suggest reducing expenses by 10% in each category
-        analytics.expensesByCategory().forEach((category, amount) -> {
-            BigDecimal recommended = amount.multiply(BigDecimal.valueOf(0.9));
-            recommendations.put(category + "_recommended", recommended);
-        });
-
-        return recommendations;
-    }
-
-    public record MonthlySummaryResponse(
-        AnalyticsResponse analytics,
-        Month month,
-        int year,
-        Map<String, BigDecimal> budgetRecommendations
-    ) {}
-
-
-    public BigDecimal getCurrentBalance(Long userId) {
-        List<Transaction> allTransactions = transactionRepository.findByUserOrderByDateDesc(
-            userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"))
-        );
-
-        return calculateBalance(allTransactions);
-    }
-
-    public BigDecimal getBalanceForPeriod(Long userId, LocalDateTime startDate, LocalDateTime endDate) {
-        User user = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("User not found"));
-
-        List<Transaction> periodTransactions = transactionRepository.findByUserAndDateBetweenOrderByDateDesc(
-            user, startDate, endDate
-        );
-
-        return calculateBalance(periodTransactions);
-    }
-
-    private BigDecimal calculateBalance(List<Transaction> transactions) {
-        BigDecimal balance = BigDecimal.ZERO;
-        for (Transaction transaction : transactions) {
-            if (transaction.getType() == Transaction.TransactionType.INCOME) {
-                balance = balance.add(transaction.getAmount());
-            } else {
-                balance = balance.subtract(transaction.getAmount());
-            }
-        }
-        return balance;
-    }
 }
