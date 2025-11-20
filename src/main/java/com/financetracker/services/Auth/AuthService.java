@@ -6,11 +6,13 @@ import com.financetracker.services.JWT.JwtService;
 import com.financetracker.dto.login.LoginRequest;
 import com.financetracker.entity.User;
 import com.financetracker.repository.UserRepository;
+import com.financetracker.services.UserServices.CustomUserDetails;
 import com.financetracker.services.UserServices.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -42,25 +44,20 @@ public class AuthService {
     }
 
     public LoginResponse login(LoginRequest request) {
-        try {
-            authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                    request.getEmail(),
-                    request.getPassword()
-                )
-            );
-        } catch (BadCredentialsException e) {
-            throw new RuntimeException("Invalid email or password");
-        }
+
+        Authentication authentication = authenticationManager.authenticate(
+            new UsernamePasswordAuthenticationToken(
+                request.email(),
+                request.password()
+            )
+        );
 
 
-        UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
-        String token = jwtService.generateToken(userDetails);
 
-        // Find the user to get the ID
-        User user = userRepository.findByEmail(request.getEmail())
-            .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        User user = userDetails.getUser();
+        String jwtToken = jwtService.generateToken(userDetails);
 
-        return new LoginResponse(token, user.getId(), user.getFirstName(), user.getLastName());
+        return new LoginResponse(jwtToken, user);
     }
 }

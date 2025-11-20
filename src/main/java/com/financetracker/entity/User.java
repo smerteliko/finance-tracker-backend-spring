@@ -1,5 +1,6 @@
 package com.financetracker.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -9,7 +10,9 @@ import org.hibernate.annotations.Comment;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "users", indexes = {
@@ -40,6 +43,7 @@ public class User extends BaseEntity {
         example = "password123",
         requiredMode = Schema.RequiredMode.REQUIRED,
         minLength = 6)
+    @JsonIgnore
     private String password;
 
     @NotBlank
@@ -62,7 +66,18 @@ public class User extends BaseEntity {
     )
     private String lastName;
 
+    @Column(columnDefinition = "jsonb")
+    private String settings = "{\"currency\": \"USD\", \"locale\": \"en\"}";
+
+    @JsonIgnore
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Comment("List of user transactions")
-    private List<Transaction> transactions = new ArrayList<>();
+    private Set<Transaction> transactions = new HashSet<>();
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Category> categories = new HashSet<>();
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Account> accounts = new HashSet<>();
 }
