@@ -11,6 +11,16 @@ This project is a comprehensive showcase of the full development lifecycle—fro
 
 _The frontend, based on Vue.js 3, is currently under active development._
 
+## 🔗 Project Ecosystem Links
+
+This repository is part of a larger full-stack project, designed for technology comparison and demonstration:
+
+| Project                       | Role | Repository Link                                                 |
+|:------------------------------| :--- |:----------------------------------------------------------------|
+| **Frontend** (Vue.js)         | Client Application (UI) | `https://github.com/smerteliko/finance-tracker-frontend-vue`    |
+| **Sibling Backend** (Symfony) | Alternative Backend Implementation | `https://github.com/smerteliko/finance-tracker-backend-symfony` |
+
+
 ## 🚀 Key API Features
 
 * **Authentication & Security:** A reliable user registration and login system built with **JWT** (JSON Web Tokens) and **Spring Security**.
